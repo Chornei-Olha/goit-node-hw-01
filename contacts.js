@@ -4,46 +4,62 @@ const ObjectID = require("bson-objectid");
 
 const contactsPath = path.join(__dirname, "db/contacts.json");
 async function updateContacts(contacts) {
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  }
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+}
 
 async function listContacts() {
-  const data = await fs.readFile(contactsPath);
-  const contacts = JSON.parse(data);
-  return contacts;
+  try {
+    const data = await fs.readFile(contactsPath);
+    const contacts = JSON.parse(data);
+    return contacts;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function getContactById(contactId) {
-  const contacts = await listContacts();
-  const currentContact = contacts.find((contact) => contact.id === contactId);
-  if (!currentContact) {
-    return null;
+  try {
+    const contacts = await listContacts();
+    const currentContact = contacts.find((contact) => contact.id === contactId);
+    if (!currentContact) {
+      return null;
+    }
+    return currentContact;
+  } catch (err) {
+    console.error(err);
   }
-  return currentContact;
 }
 
 async function removeContact(contactId) {
-  const contacts = await listContacts();
-  const idx = contacts.findIndex(({ id }) => id === contactId);
-  if (idx === -1) {
-    return null;
+  try {
+    const contacts = await listContacts();
+    const idx = contacts.findIndex(({ id }) => id === contactId);
+    if (idx === -1) {
+      return null;
+    }
+    const [removeContact] = contacts.splice(idx, 1);
+    updateContacts(contacts);
+    return removeContact;
+  } catch (err) {
+    console.error(err);
   }
-  const [removeContact] = contacts.splice(idx, 1);
-  updateContacts(contacts);
-  return removeContact;
 }
 
 async function addContact(name, email, phone) {
-  const contacts = await listContacts();
-  const newContact = {
-    id: ObjectID(),
-    name,
-    email,
-    phone,
-  };
-  contacts.push(newContact);
-  updateContacts(contacts);
-  return newContact;
+  try {
+    const contacts = await listContacts();
+    const newContact = {
+      id: ObjectID(),
+      name,
+      email,
+      phone,
+    };
+    contacts.push(newContact);
+    updateContacts(contacts);
+    return newContact;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 module.exports = {
